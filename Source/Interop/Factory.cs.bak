@@ -1,0 +1,92 @@
+using System.Runtime.InteropServices;
+using System;
+using RGiesecke.DllExport;
+using Skynet.Collections;
+using  Skynet.Primitives;
+
+namespace Skynet;
+
+[ComVisible(true)]
+[Guid("6EF0F927-7D13-4E65-B940-59C2AD1E9B34")]
+[InterfaceType(ComInterfaceType.InterfaceIsDual)]
+public interface IFactory
+{
+    Bool Bool([In] bool value);
+
+    Int Int([In] int value);
+
+    Float Float([In] double value);
+
+    Numeric Numeric([In] decimal value);
+
+    Date Date([In] DateTime value);
+
+    Chars Chars(
+        [In, MarshalAs(UnmanagedType.BStr)] string value);
+
+    List List(
+        [In] ValueKind kind,
+        [In, Optional, DefaultParameterValue(0)] int capacity);
+}
+
+[ComVisible(true)]
+[Guid("4C8E038F-9C67-483D-AB78-607D61333906")]
+[ProgId("Skynet.Factory")]
+[ClassInterface(ClassInterfaceType.None)]
+[ComDefaultInterface(typeof(IFactory))]
+public sealed class Factory : IFactory
+{
+    public string Test()
+    {
+        return "Skynet Factory";
+    }
+
+        public Bool Bool(bool value)
+    {
+        return new Bool(value);
+    }
+
+    public Int Int(int value)
+    {
+        return new Int(value);
+    }
+
+    public Float Float(double value)
+    {
+        return new Float(value);
+    }
+
+    public Numeric Numeric(decimal value)
+    {
+        return new Numeric(value);
+    }
+
+    public Date Date(DateTime value)
+    {
+        return new Date(value);
+    }
+
+    public Chars Chars(string value)
+    {
+        return new Chars(value);
+    }
+
+    public List List(
+        ValueKind kind,
+        int capacity = 0)
+    {
+        return new List(kind, capacity);
+    }
+}
+
+internal static class Exports
+{
+    [DllExport(
+        "Factory",
+        CallingConvention = CallingConvention.StdCall)]
+    [return: MarshalAs(UnmanagedType.IDispatch)]
+    public static object CreateFactory()
+    {
+        return new Factory();
+    }
+}

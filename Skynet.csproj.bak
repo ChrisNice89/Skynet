@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Zielplattform: .NET Framework 4.8.1.
+    Damit bleibt die Bibliothek mit klassischem COM-Interop und TLB kompatibel.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net481</TargetFramework>
+
+    <!--
+      Feste C#-Sprachversion für reproduzierbare Builds.
+      Das vorhandene .NET SDK 8 unterstützt C# 12.
+    -->
+    <LangVersion>12.0</LangVersion>
+
+    <!-- Aktiviert Nullable Reference Types. -->
+    <Nullable>enable</Nullable>
+    <!-- Direkter Speicherzugriff für FixedSizeMemory<T> -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--
+      Unterstützte Plattformen.
+      Es werden getrennte Builds für 32-Bit- und 64-Bit-Access erzeugt.
+    -->
+    <Platforms>x86;x64</Platforms>
+    <Prefer32Bit>false</Prefer32Bit>
+
+    <!-- Name und Stamm-Namespace der erzeugten Assembly. -->
+    <AssemblyName>Skynet</AssemblyName>
+    <RootNamespace>Skynet</RootNamespace>
+
+    <!-- Das Projekt erzeugt eine Klassenbibliothek beziehungsweise DLL. -->
+    <OutputType>Library</OutputType>
+
+    <!-- Gleiche Eingaben sollen reproduzierbare Build-Ergebnisse erzeugen. -->
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!-- Einstellungen für den 32-Bit-Build. -->
+  <PropertyGroup Condition="'$(Platform)' == 'x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\x86\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <!-- Einstellungen für den 64-Bit-Build. -->
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <!--
+    Im Release-Build werden keine PDB-Symboldateien erzeugt.
+    Für den Access-Rollout werden später nur DLL und TLB benötigt.
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="RGiesecke.DllExport.Metadata">
+      <HintPath>packages\UnmanagedExports.1.2.7\lib\net\RGiesecke.DllExport.Metadata.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+  <Compile Remove="InteropExport\**\*.cs" />
+  <None Include="InteropExport\**\*.cs" />
+</ItemGroup>
+
+  <!-- Nachbearbeitung der DLL: erzeugt den nativen Factory-Export -->
+  <Import
+    Project="packages\UnmanagedExports.1.2.7\tools\RGiesecke.DllExport.targets"
+    Condition="Exists('packages\UnmanagedExports.1.2.7\tools\RGiesecke.DllExport.targets')" />
+
+</Project>
